@@ -6,12 +6,15 @@
     use App\Beneficiary;
     use App\Application;
     use Illuminate\Support\Facades\DB;
+    use App\Service;
 
 
     $location_id    = Auth::user()->location_id;
     $type           = Auth::user()->user_type;
     $id             = Auth::user()->id;
     $u      = User::where('id',$id)->first();
+
+    $services   = Service::all();
 
 
     $values     = DB::select('SELECT * FROM brgy WHERE brgyCode IN(
@@ -58,9 +61,10 @@
     }
     else
     {
-        if(isset($_GET['option']) && !isset($_GET['from']) && !isset($_GET['to']))
+        if(isset($_GET['option']) && isset($_GET['aics_services']) && !isset($_GET['from']) && !isset($_GET['to']))
         {
-            $option = $_GET['option'];
+            $option         = $_GET['option'];
+            $aics_services = $_GET['aics_services'];
 
             if($option === 'approved')
             {
@@ -77,11 +81,13 @@
                     ->select('lastname','firstname','middlename','suffix','aics_services','services.services_id','applications.*')
                     ->where('applications.is_approved',$condition)
                     ->where('applications.is_archived',false)
+                    ->where('services.services_id', $aics_services)
                     ->get();
         }
-        elseif(isset($_GET['option']) && isset($_GET['from']) && isset($_GET['to']))
+        elseif(isset($_GET['option']) && isset($_GET['aics_services']) && isset($_GET['from']) && isset($_GET['to']))
         {
             $option = $_GET['option'];
+            $aics_services = $_GET['aics_services'];
 
             if($option === 'approved')
             {
@@ -101,14 +107,25 @@
                     ->where('applications.is_approved',$condition)
                     ->where('applications.is_archived',false)
                     ->whereBetween('applications.updated_at',[$from, $to])
+                    ->where('services.services_id', $aics_services)
                     ->get();
         }
         else
         {
+            $option = $_GET['option'];
+            if($option === 'approved')
+            {
+                $condition     = true;
+            }
+            else
+            {
+                $condition     = false;
+            }
             $result     = DB::table('applications')
                     ->join('beneficiaries','applications.beneficiary_id','=','beneficiaries.beneficiary_id')
                     ->join('services','applications.services_id','=','services.services_id')
                     ->select('lastname','firstname','middlename','suffix','aics_services','services.services_id','applications.*')
+                    ->where('applications.is_approved',$condition)
                     ->where('applications.is_submitted',true)
                     ->where('applications.is_archived',false)
                     ->get();
@@ -145,7 +162,7 @@
 </div>
 <div class="container p-0">
     <div class="row justify-content-center">
-        <div class="col-md-12 main-body p-0">
+        <div class="col-md-12 main-body p-0 px-4 mb-5">
             <h5 class="title"><b>
                 @if($user_type === 'ADMIN')
                     @if($path === '/print-reports' || $path === '/print-requests')
@@ -178,6 +195,15 @@
                                     <form action="" method="GET">
                                         <div class="row px-3 my-3">
                                             <div class="col-md-3 p-0 m-0">
+                                                <b>SERVICES:</b>
+                                                <select name="aics_services" id="aics_services" class="w-50 p-1">
+                                                    <option value="">SELECT</option>
+                                                    @foreach($services as $service)
+                                                        <option value="{{$service->services_id}}">{{$service->aics_services}}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3 p-0 m-0">
                                                 <b>FROM:</b>
                                                 <input type="date" name="from" id="from" class="w-75" required>
                                             </div>
@@ -186,7 +212,7 @@
                                                 <input type="date" name="to" id="to" class="w-75" required>
                                             </div>
                                             <input type="hidden" name="option" id="option" class="w-75">
-                                            <div class="col-md-6 p-0 m-0">
+                                            <div class="col-md-3 p-0 m-0">
                                                 <button type="submit" class="btn btn-primary p-0 py-1 px-4"
                                                         data-toggle="popover" 
                                                         data-trigger="hover"
@@ -276,6 +302,7 @@
                                 <table class="mb-5 table table-sm table-condensed w3-small" @if($path === '/submit-requests') id="dt" @endif>
                                     <thead>
                                         <tr>
+                                            <th></th>
                                             <th>NAME</th>
                                             <th>REQUEST</th>
                                             @if($user_type === 'ADMIN')
@@ -301,12 +328,18 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                    @php
+                                        $ctr = count($result);
+                                    @endphp
                                     @foreach($result as $row)
                                     @php
                                         $by     = User::where('id',$row->id)->first();
                                         $added_by = strtoupper($by->name);
                                     @endphp
                                         <tr>
+                                            <td>
+                                                {{$ctr--}}
+                                            </td>
                                             <td>
                                                 {{strtoupper($row->lastname)}}, {{strtoupper($row->firstname)}} {{strtoupper($row->middlename)}} {{strtoupper($row->suffix)}}
                                             </td>
@@ -378,6 +411,13 @@
                                         </tr>
                                     @endforeach
                                     </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="5">
+                                                <center>--- <i>nothing follows</i> ---</center>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
                                 </table>
                             @else
                                 <center>
@@ -428,11 +468,17 @@
 </script>
 @endif
 <script>
+
 function printDiv() 
 {
+    var user_type = '{{Auth::user()->user_type}}';
     var div = document.getElementById('printArea');
     var print = window.open('','Print Window');
-    var img   = '<center><img src="{{asset('images/header.png')}}" alt="LOGO" style="width:100%;max-width:100%;" class="m-0"></center><br />';
+    if(user_type === 'ADMIN'){
+        var img   = '<center><img src="{{asset('images/new_header.png')}}" alt="LOGO" style="width:100%;max-width:100%;" class="m-0"></center><br />';
+    } else {
+        var img   = '<center><img src="{{asset('images/new_header2.png')}}" alt="LOGO" style="width:100%;max-width:100%;" class="m-0"></center><br />';
+    }
     var prepared_by = 'PREPARED BY: <br /><br /><br /><p><b>{{strtoupper($u->name)}}</b></p><p><small>{{strtoupper($u->user_type)}}</small></p><p><small>{{date("F j, Y h:i:sa")}}</small></p>';
     print.document.open();
     print.document.write('<html><head><link href="{{ asset('css/app.css') }}" rel="stylesheet"><link href="{{ asset('css/w3.css') }}" rel="stylesheet"><link href="{{ asset('fonts/app.css') }}" rel="stylesheet"><link href="{{ asset('awesome/css/font-awesome.min.css') }}" rel="stylesheet"></head><style>@media print{body{margin:0 !important;}}body{padding:0 !important;}.main{font-size:10px !important;}table{font-size:11px !important;}p{line-height:1.2 !important;padding:0;margin:0;}.dataTables_info,.dataTables_length,.dataTables_filter,.dataTables_paginate{display:none !important;}</style><body onload="window.print()" class="p-5">'+img+'<br /><main>'+div.innerHTML+'<br /><br /><br />'+prepared_by+'</main></body></html>');

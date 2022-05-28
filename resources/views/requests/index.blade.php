@@ -114,7 +114,7 @@
                                 @else
                                     @php
                                         $result = Beneficiary::where('is_archived',false)
-                                                            ->orderBy('beneficiary_id','DESC')->get();
+                                                            ->orderBy('created_at','ASC')->get();
                                     @endphp
                                     <p class="my-0 py-0"><center>ALL RECORDS: <b>{{count($result)}} result/s found</b></center></p>
                                 @endif
@@ -228,10 +228,11 @@
                                             $result   = DB::table('applications')
                                                     ->join('services','applications.services_id','=','services.services_id')
                                                     ->join('beneficiaries','applications.beneficiary_id','=','beneficiaries.beneficiary_id')
-                                                    ->select('applications.*','services.*','beneficiaries.lastname','beneficiaries.firstname','beneficiaries.middlename','beneficiaries.suffix')
+                                                    ->select('applications.*','services.*','beneficiaries.lastname','beneficiaries.firstname','beneficiaries.middlename','beneficiaries.suffix','beneficiaries.created_at AS created')
                                                     ->where('applications.is_approved', $status)
                                                     ->where('applications.is_submitted',true)
                                                     ->where('applications.is_archived',false)
+                                                    ->orderBy('beneficiaries.created_at','ASC')
                                                     ->get();
                                         }
                                         else
@@ -239,11 +240,12 @@
                                             $result   = DB::table('applications')
                                                     ->join('services','applications.services_id','=','services.services_id')
                                                     ->join('beneficiaries','applications.beneficiary_id','=','beneficiaries.beneficiary_id')
-                                                    ->select('applications.*','services.*','beneficiaries.lastname','beneficiaries.firstname','beneficiaries.middlename','beneficiaries.suffix')
+                                                    ->select('applications.*','services.*','beneficiaries.lastname','beneficiaries.firstname','beneficiaries.middlename','beneficiaries.suffix','beneficiaries.created_at AS created')
                                                     ->where('barangay', $barangay)
                                                     ->where('applications.is_approved', $status)
                                                     ->where('applications.is_submitted',true)
                                                     ->where('applications.is_archived',false)
+                                                    ->orderBy('beneficiaries.created_at','ASC')
                                                     ->get();
                                         }
                                     @endphp
@@ -254,10 +256,11 @@
                                         $result   = DB::table('applications')
                                                     ->join('services','applications.services_id','=','services.services_id')
                                                     ->join('beneficiaries','applications.beneficiary_id','=','beneficiaries.beneficiary_id')
-                                                    ->select('applications.*','services.*','beneficiaries.lastname','beneficiaries.firstname','beneficiaries.middlename','beneficiaries.suffix')
+                                                    ->select('applications.*','services.*','beneficiaries.lastname','beneficiaries.firstname','beneficiaries.middlename','beneficiaries.suffix','beneficiaries.created_at AS created')
                                                     ->where('barangay', $barangay)
                                                     ->where('applications.is_submitted',true)
                                                     ->where('applications.is_archived',false)
+                                                    ->orderBy('beneficiaries.created_at','ASC')
                                                     ->get();
                                     @endphp
                                     <p class="my-0 py-0"><center>{{count($result)}} result/s found</center></p>
@@ -266,9 +269,10 @@
                                         $result   = DB::table('applications')
                                                     ->join('services','applications.services_id','=','services.services_id')
                                                     ->join('beneficiaries','applications.beneficiary_id','=','beneficiaries.beneficiary_id')
-                                                    ->select('applications.*','services.*','beneficiaries.lastname','beneficiaries.firstname','beneficiaries.middlename','beneficiaries.suffix')
+                                                    ->select('applications.*','services.*','beneficiaries.lastname','beneficiaries.firstname','beneficiaries.middlename','beneficiaries.suffix','beneficiaries.created_at AS created')
                                                     ->where('applications.is_submitted',true)
                                                     ->where('applications.is_archived',false)
+                                                    ->orderBy('beneficiaries.created_at','ASC')
                                                     ->get();
                                     @endphp
                                     <p class="my-0 py-0"><center>ALL RECORDS: <b>{{count($result)}} result/s found</b></center></p>
@@ -304,7 +308,7 @@
                                                     {{strtoupper($row->aics_services)}}
                                                 </td>
                                                 <td>
-                                                    {{strtoupper($row->updated_at)}}
+                                                    {{strtoupper($row->created)}}
                                                 </td>
                                                 <td class="text-center">
                                                     @if(is_null($row->is_approved))

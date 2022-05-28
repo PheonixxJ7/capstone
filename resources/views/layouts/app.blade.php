@@ -65,7 +65,7 @@
                 'info'        : false,
                 'autoWidth'   : false,
                 'select'      : true,
-                "order": [[ 0, "desc" ]]
+                "order": [[ 0, "asc" ]]
             });
             $(document).on('click','.alert', function(){
                 $(this).hide();
@@ -187,11 +187,11 @@
 <style>
     body{
         font-family:"Sans Semi" !important;
-        background:url('{{asset("images/images/municipal.jpg")}}');
+        /* background:url('{{asset("images/images/municipal.jpg")}}');
         background-position: center;
         background-repeat: no-repeat;
         background-size: cover;
-        background-blend-mode:overlay;
+        background-blend-mode:overlay; */
     }
     #content, .w3-table{
         font-family:"Sans Light" !important;
@@ -515,8 +515,8 @@
           <div class="row">
               <div class="col-md-12" style="background:#FFF;">
                 <center>
-              <img src="{{asset('images/images/header_angadanan.jpg')}}" alt="ANGADANAN"
-              style="width:60%; height:200px;margin-left:300px;">
+              <img src="{{asset('images/images/header2.png')}}" alt="ANGADANAN"
+              style="width:80%; height:200px;margin-left:270px;">
               </center>
               </div>
           </div>
