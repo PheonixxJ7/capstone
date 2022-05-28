@@ -43,7 +43,7 @@
 <div class="row p-0 m-0">
     <div class="col-md-12 header-top-title">
         @if(Auth::user()->user_type === "ADMIN")
-        Social Welfare Assistance to Crisis Beneficiary’s Request Management System
+        Social Welfare Assistance to Individuals in Crisis Situation Beneficiary’s Request Management System
         @else
             Assistance to Individual in Crisis Situation (AICS) Services
         @endif
