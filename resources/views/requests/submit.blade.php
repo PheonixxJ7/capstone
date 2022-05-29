@@ -149,7 +149,7 @@
             @if($path === '/print-reports' || $path === '/print-requests')
                 Print Request
             @else
-                Approve Beneficiaries' Requests
+                Manage Beneficiaries' Requests
             @endif
         @else
             @if($path === '/submit-requests')
