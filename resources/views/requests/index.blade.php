@@ -25,7 +25,7 @@
         @if($user_type === 'ADMIN')
             
             @if($path === '/requests')
-                Approve Beneficiaries' Requests
+                Manage Beneficiaries' Requests
             @elseif($path === '/requests-status')
                 Manage Status of Beneficiaries' Requests
             @elseif($path === '/send-sms')
